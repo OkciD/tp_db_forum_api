@@ -4,3 +4,7 @@
 # Maven
 *.iml
 target/
+
+# Testing script
+tech-db-forum
+*html
