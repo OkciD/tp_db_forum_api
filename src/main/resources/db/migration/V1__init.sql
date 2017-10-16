@@ -5,12 +5,10 @@ BEGIN TRANSACTION;
 DROP TRIGGER IF EXISTS on_thread_inserted ON thread;
 DROP TRIGGER IF EXISTS on_post_inserted ON post;
 DROP TRIGGER IF EXISTS on_post_message_edited ON post;
-DROP TRIGGER IF EXISTS on_vote_inserted ON vote;
 
 DROP FUNCTION IF EXISTS update_forum_n_threads() CASCADE;
 DROP FUNCTION IF EXISTS update_forum_n_posts() CASCADE;
 DROP FUNCTION IF EXISTS update_post_is_edited() CASCADE;
-DROP FUNCTION IF EXISTS update_rating() CASCADE;
 
 DROP TABLE IF EXISTS "user" CASCADE;
 DROP TABLE IF EXISTS forum CASCADE;
@@ -23,7 +21,6 @@ DROP INDEX IF EXISTS user_email_lower_unique;
 DROP INDEX IF EXISTS forum_slug_lower_unique;
 
 CREATE TABLE "user" (
-  id BIGSERIAL PRIMARY KEY,
   nickname VARCHAR(50) NOT NULL,
   fullname VARCHAR(100) NOT NULL,
   email VARCHAR(50) NOT NULL,
@@ -37,12 +34,11 @@ CREATE UNIQUE INDEX user_email_lower_unique
   ON "user" (lower("user".email));
 
 CREATE TABLE forum (
-  id BIGSERIAL PRIMARY KEY,
   title VARCHAR(50) NOT NULL,
   slug VARCHAR(50) NOT NULL,
-  moderator_id BIGINT NOT NULL REFERENCES "user",
-  n_threads BIGINT DEFAULT 0 NOT NULL,
-  n_posts BIGINT DEFAULT 0 NOT NULL
+  noderator VARCHAR(50) NOT NULL,
+  n_threads BIGINT DEFAULT 0,
+  n_posts BIGINT DEFAULT 0
 );
 
 
@@ -54,9 +50,9 @@ CREATE TABLE thread (
   title VARCHAR(50) NOT NULL,
   slug VARCHAR(50),
   description TEXT NOT NULL,
-  creator_id BIGINT REFERENCES "user",
+  creator VARCHAR(50) NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-  forum_id BIGINT REFERENCES forum,
+  forum VARCHAR(50) NOT NULL,
   rating INTEGER DEFAULT 0 NOT NULL
 );
 
@@ -65,14 +61,14 @@ CREATE TABLE post (
   message TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   is_edited BOOLEAN DEFAULT FALSE NOT NULL,
-  author_id BIGINT REFERENCES "user",
+  author VARCHAR(50) NOT NULL,
   parent BIGINT REFERENCES post,
-  thread_id BIGINT REFERENCES thread
+  thread VARCHAR(50),
+  forum VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE vote (
-  user_id BIGINT REFERENCES "user" NOT NULL,
-  thread_id BIGINT REFERENCES thread NOT NULL,
+  "user" VARCHAR(50) NOT NULL,
   vote INT NOT NULL
     CONSTRAINT plus_or_minus CHECK (vote = -1 OR vote = 1)
 );
@@ -117,18 +113,5 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER on_post_message_edited
 AFTER UPDATE ON post
 FOR EACH ROW EXECUTE PROCEDURE update_post_is_edited();
-
-
-CREATE OR REPLACE FUNCTION update_rating()
-  RETURNS TRIGGER AS $$
-    BEGIN
-      UPDATE thread SET thread.rating = thread.rating + new.vote
-      WHERE thread.id = new.thread_id;
-    END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER on_vote_inserted
-AFTER INSERT ON vote
-FOR EACH ROW EXECUTE PROCEDURE update_rating();
 
 END TRANSACTION;
