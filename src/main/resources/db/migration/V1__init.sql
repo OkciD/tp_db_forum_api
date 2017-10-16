@@ -19,31 +19,40 @@ DROP TABLE IF EXISTS vote CASCADE;
 DROP TABLE IF EXISTS post CASCADE;
 
 DROP INDEX IF EXISTS user_nickname_lower_unique;
+DROP INDEX IF EXISTS user_email_lower_unique;
+DROP INDEX IF EXISTS forum_slug_lower_unique;
 
 CREATE TABLE "user" (
   id BIGSERIAL PRIMARY KEY,
   nickname VARCHAR(50) NOT NULL,
   fullname VARCHAR(100) NOT NULL,
-  email VARCHAR(50) UNIQUE NOT NULL,
+  email VARCHAR(50) NOT NULL,
   description TEXT
 );
 
-CREATE UNIQUE INDEX user_nickname_lower_unique 
+CREATE UNIQUE INDEX user_nickname_lower_unique
   ON "user" (lower("user".nickname));
+
+CREATE UNIQUE INDEX user_email_lower_unique
+  ON "user" (lower("user".email));
 
 CREATE TABLE forum (
   id BIGSERIAL PRIMARY KEY,
-  title VARCHAR(50) UNIQUE NOT NULL,
-  slug VARCHAR(50) UNIQUE NOT NULL,
+  title VARCHAR(50) NOT NULL,
+  slug VARCHAR(50) NOT NULL,
   moderator_id BIGINT NOT NULL REFERENCES "user",
   n_threads BIGINT DEFAULT 0 NOT NULL,
   n_posts BIGINT DEFAULT 0 NOT NULL
 );
 
+
+CREATE UNIQUE INDEX forum_slug_lower_unique
+  ON forum (lower(slug));
+
 CREATE TABLE thread (
   id BIGSERIAL PRIMARY KEY,
   title VARCHAR(50) NOT NULL,
-  slug VARCHAR(50) UNIQUE,
+  slug VARCHAR(50),
   description TEXT NOT NULL,
   creator_id BIGINT REFERENCES "user",
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
