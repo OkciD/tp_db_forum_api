@@ -8,10 +8,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class ForumRepository extends AbstractRepository {
+
     final static private RowMapper<Forum> FORUM_ROW_MAPPER = (resultSet, nRows) ->
             new Forum(resultSet.getString("title"),
                     resultSet.getString("slug"),
-                    resultSet.getString("noderator"),
+                    resultSet.getString("moderator"),
                     resultSet.getLong("n_threads"),
                     resultSet.getLong("n_posts")
             );
@@ -22,16 +23,16 @@ public class ForumRepository extends AbstractRepository {
     }
 
     public Forum createForum(String title, String slug, String moderator) {
-        Forum newForum = new Forum(title, slug, moderator, 0L, 0L);
-        jdbcTemplate.update(
-                "INSERT INTO forum (title, slug, noderator) " +
+        return jdbcTemplate.queryForObject(
+                "INSERT INTO forum (title, slug, moderator) " +
                         "VALUES (?, ?, " +
-                        "(SELECT \"user\".nickname FROM \"user\" WHERE lower(\"user\".nickname) = lower(?)))",
-                newForum.getTitle(),
-                newForum.getSlug(),
-                newForum.getUser()
+                        "(SELECT \"user\".nickname FROM \"user\" WHERE lower(\"user\".nickname) = lower(?)))" +
+                        "RETURNING *",
+                FORUM_ROW_MAPPER,
+                title,
+                slug,
+                moderator
         );
-        return newForum;
     }
 
     public Forum getForumBySlug(String slug) {

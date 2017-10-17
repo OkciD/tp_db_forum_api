@@ -34,9 +34,9 @@ CREATE UNIQUE INDEX user_email_lower_unique
   ON "user" (lower("user".email));
 
 CREATE TABLE forum (
-  title VARCHAR(50) NOT NULL,
-  slug VARCHAR(50) NOT NULL,
-  noderator VARCHAR(50) NOT NULL,
+  title VARCHAR(100) NOT NULL,
+  slug VARCHAR(100) NOT NULL,
+  moderator VARCHAR(50) NOT NULL,
   n_threads BIGINT DEFAULT 0,
   n_posts BIGINT DEFAULT 0
 );
