@@ -2,6 +2,7 @@ package api.controllers;
 
 import api.models.User;
 import api.repositories.UserRepository;
+import api.responses.Message;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,9 @@ public class UserController {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(userRepository.getUserByNickname(nickname));
         } catch (EmptyResultDataAccessException exception) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new Message("Can't find user by nickname: " + nickname)
+            );
         }
     }
 
