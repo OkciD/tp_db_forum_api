@@ -11,9 +11,9 @@ public class ForumRepository extends AbstractRepository {
     final static private RowMapper<Forum> FORUM_ROW_MAPPER = (resultSet, nRows) ->
             new Forum(resultSet.getString("title"),
                     resultSet.getString("slug"),
-                    resultSet.getString("user"),
-                    resultSet.getLong("threads"),
-                    resultSet.getLong("posts")
+                    resultSet.getString("noderator"),
+                    resultSet.getLong("n_threads"),
+                    resultSet.getLong("n_posts")
             );
 
     @Autowired
@@ -36,7 +36,7 @@ public class ForumRepository extends AbstractRepository {
 
     public Forum getForumBySlug(String slug) {
         return jdbcTemplate.queryForObject(
-                "SELECT * FROM forum WHERE forum.slug = ?",
+                "SELECT * FROM forum WHERE lower(forum.slug) = lower(?)",
                 FORUM_ROW_MAPPER,
                 slug
         );

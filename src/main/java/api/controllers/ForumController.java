@@ -2,6 +2,7 @@ package api.controllers;
 
 import api.models.Forum;
 import api.repositories.ForumRepository;
+import api.responses.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
@@ -36,7 +37,9 @@ public class ForumController {
                     forumRepository.getForumBySlug(forumData.getSlug())
             );
         } catch (DataAccessException exception) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new Message(Message.CANT_FIND_USER, forumData.getUser())
+            );
         }
     }
 }

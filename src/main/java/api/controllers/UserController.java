@@ -37,7 +37,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.OK).body(userRepository.getUserByNickname(nickname));
         } catch (EmptyResultDataAccessException exception) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                    new Message("Can't find user by nickname: " + nickname)
+                    new Message(Message.CANT_FIND_USER, nickname)
             );
         }
     }
@@ -52,9 +52,13 @@ public class UserController {
                     userData.getAbout()
             ));
         } catch (DuplicateKeyException exception) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                    new Message("Username or email conflict")
+            );
         } catch (EmptyResultDataAccessException exception) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new Message(Message.CANT_FIND_USER, nickname)
+            );
         }
     }
 }
