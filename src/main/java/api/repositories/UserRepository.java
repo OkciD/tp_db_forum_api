@@ -6,13 +6,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import javax.jws.soap.SOAPBinding;
 import java.util.List;
 
 @Repository
 public class UserRepository extends AbstractRepository {
 
-    final static private RowMapper<User> userMapper = (resultSet, nRows) ->
+    final static private RowMapper<User> USER_ROW_MAPPER = (resultSet, nRows) ->
             new User(resultSet.getString("nickname"),
                     resultSet.getString("fullname"),
                     resultSet.getString("email"),
@@ -41,7 +40,7 @@ public class UserRepository extends AbstractRepository {
                 "SELECT \"user\".nickname, \"user\".fullname, \"user\".email, \"user\".description " +
                         "FROM \"user\" " +
                         "WHERE lower(\"user\".nickname) = lower(?) OR lower(\"user\".email) = lower(?)";
-        return jdbcTemplate.query(queryString, userMapper, nickname, email);
+        return jdbcTemplate.query(queryString, USER_ROW_MAPPER, nickname, email);
     }
 
     public User getUserByNickname(String nickname) {
@@ -49,7 +48,7 @@ public class UserRepository extends AbstractRepository {
                 "SELECT \"user\".nickname, \"user\".fullname, \"user\".email, \"user\".description " +
                 "FROM \"user\" " +
                 "WHERE lower(\"user\".nickname) = lower(?)";
-        return jdbcTemplate.queryForObject(queryString, userMapper, nickname);
+        return jdbcTemplate.queryForObject(queryString, USER_ROW_MAPPER, nickname);
     }
 
     public User updateUserData(String nickname, String fullName, String email, String description) {
@@ -59,6 +58,6 @@ public class UserRepository extends AbstractRepository {
                 "description = COALESCE(?, description) " +
                 "WHERE lower(nickname) = lower(?) " +
                 "RETURNING *";
-        return jdbcTemplate.queryForObject(queryString, userMapper, fullName, email, description, nickname);
+        return jdbcTemplate.queryForObject(queryString, USER_ROW_MAPPER, fullName, email, description, nickname);
     }
 }
